@@ -1,8 +1,10 @@
-import {defineConfig} from 'vite';
-import {hydrogen} from '@shopify/hydrogen/vite';
-import {oxygen} from '@shopify/mini-oxygen/vite';
-import {vitePlugin as remix} from '@remix-run/dev';
-import tsconfigPaths from 'vite-tsconfig-paths';
+import { defineConfig } from "vite";
+import { hydrogen } from "@shopify/hydrogen/vite";
+import { oxygen } from "@shopify/mini-oxygen/vite";
+import { vitePlugin as remix } from "@remix-run/dev";
+import tsconfigPaths from "vite-tsconfig-paths";
+// import { cjsInterop } from 'vite-plugin-cjs-interop';
+
 
 export default defineConfig({
   plugins: [
@@ -17,10 +19,17 @@ export default defineConfig({
       },
     }),
     tsconfigPaths(),
+    // cjsInterop({
+    //   dependencies: ['@shopify/app-bridge-react', 'typographic-base']
+    // })
   ],
+  esbuild: {
+    target: 'esnext',
+  },
+  define: {
+    "process.env": {}, // ✅ Polyfill process.env to avoid Eppo errors
+  },
   build: {
-    // Allow a strict Content-Security-Policy
-    // withtout inlining assets as base64:
     assetsInlineLimit: 0,
   },
   ssr: {
@@ -35,7 +44,10 @@ export default defineConfig({
        * Include 'example-dep' in the array below.
        * @see https://vitejs.dev/config/dep-optimization-options
        */
-      include: [],
+      include: ["@eppo/js-client-sdk"],
     },
-  },
+  }, 
 });
+
+
+

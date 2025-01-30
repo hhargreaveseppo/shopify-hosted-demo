@@ -9,6 +9,9 @@ import {
 import {useVariantUrl} from '~/lib/variants';
 import {PaginatedResourceSection} from '~/components/PaginatedResourceSection';
 
+// import getStringAssignment from '~/utils/get-string-assignment';
+
+
 /**
  * @type {MetaFunction<typeof loader>}
  */
@@ -44,6 +47,18 @@ async function loadCriticalData({context, params, request}) {
   if (!handle) {
     throw redirect('/collections');
   }
+  
+  // context needed?
+  let forcedVariation = null;
+  let experimentVariation = null;
+
+  if (request?.url) {
+    const url = new URL(request.url);
+    forcedVariation = url.searchParams.get('variation'); // Optional forced variation param
+  }
+
+  console.log('Forced Variation:', forcedVariation);
+  // end
 
   const [{collection}] = await Promise.all([
     storefront.query(COLLECTION_QUERY, {
@@ -51,6 +66,22 @@ async function loadCriticalData({context, params, request}) {
       // Add other queries here, so that they are loaded in parallel
     }),
   ]);
+
+  // Eppo variation
+
+  // update later to a user context function
+  const userId = Math.random().toString()
+
+  const { default: getStringAssignment } = await import('~/utils/get-string-assignment');
+
+
+  const variation = await getStringAssignment(
+    'price-sort', 
+    userId,
+    { params: forcedVariation }, // Send the user's url param as an attribute for Eppo
+    'control' // Default if the flag doesn't exist
+  );
+  // end
 
   if (!collection) {
     throw new Response(`Collection ${handle} not found`, {
@@ -60,6 +91,7 @@ async function loadCriticalData({context, params, request}) {
 
   return {
     collection,
+    variation
   };
 }
 
@@ -75,14 +107,31 @@ function loadDeferredData({context}) {
 
 export default function Collection() {
   /** @type {LoaderReturnData} */
-  const {collection} = useLoaderData();
+  const { collection, variation } = useLoaderData();
+    // Sort products by price based on the feature flag
+    const sortedProducts = [...collection.products.nodes];
+    if (variation === 'high-to-low') {
+      sortedProducts.sort((a, b) => {
+        const priceA = parseFloat(a.priceRange.minVariantPrice.amount);
+        const priceB = parseFloat(b.priceRange.minVariantPrice.amount);
+        return priceB - priceA; // Sort descending (highest to lowest)
+      });
+    }
+    else if (variation === "low-to-high") {
+      sortedProducts.sort((a, b) => {
+        const priceA = parseFloat(a.priceRange.minVariantPrice.amount);
+        const priceB = parseFloat(b.priceRange.minVariantPrice.amount);
+        return priceA - priceB; // Sort descending (highest to lowest)
+      });
+    }
 
   return (
     <div className="collection">
       <h1>{collection.title}</h1>
       <p className="collection-description">{collection.description}</p>
+      <p><strong>Sorting algorithm: {variation}</strong></p> {/* Display the variation */}
       <PaginatedResourceSection
-        connection={collection.products}
+        connection={{ ...collection.products, nodes: sortedProducts }}
         resourcesClassName="products-grid"
       >
         {({node: product, index}) => (
