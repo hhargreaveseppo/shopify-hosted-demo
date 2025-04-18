@@ -47,18 +47,7 @@ async function loadCriticalData({context, params, request}) {
   if (!handle) {
     throw redirect('/collections');
   }
-  
-  // context needed?
-  let forcedVariation = null;
-  let experimentVariation = null;
 
-  if (request?.url) {
-    const url = new URL(request.url);
-    forcedVariation = url.searchParams.get('variation'); // Optional forced variation param
-  }
-
-  console.log('Forced Variation:', forcedVariation);
-  // end
 
   const [{collection}] = await Promise.all([
     storefront.query(COLLECTION_QUERY, {
@@ -78,7 +67,7 @@ async function loadCriticalData({context, params, request}) {
   const variation = await getStringAssignment(
     'price-sort', 
     userId,
-    { params: forcedVariation }, // Send the user's url param as an attribute for Eppo
+    { }, // Send the user's url param as an attribute for Eppo
     'control' // Default if the flag doesn't exist
   );
   // end

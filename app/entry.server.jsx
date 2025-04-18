@@ -25,12 +25,16 @@ export default async function handleRequest(
     defaultSrc: [
       "'self'",
       'https://cdn.shopify.com',
-      'https://fscdn.eppo.cloud'
+      'https://fscdn.eppo.cloud',
+      'https://*.rudderstack.com',
+      'https://*.rudderlabs.com',
     ],
     connectSrc: [
       "'self'",
       'https://cdn.shopify.com',
-      'https://fscdn.eppo.cloud'
+      'https://fscdn.eppo.cloud',
+      'https://*.rudderstack.com',
+      'https://*.rudderlabs.com',
     ]
   });
 

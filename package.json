@@ -16,6 +16,7 @@
     "@eppo/js-client-sdk": "^3.9.7",
     "@remix-run/react": "^2.13.1",
     "@remix-run/server-runtime": "^2.13.1",
+    "@rudderstack/analytics-js": "^3.16.1",
     "@shopify/hydrogen": "2024.10.1",
     "@shopify/remix-oxygen": "^2.0.9",
     "graphql": "^16.6.0",

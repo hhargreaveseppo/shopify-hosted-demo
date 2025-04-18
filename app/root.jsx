@@ -9,12 +9,18 @@ import {
   useRouteLoaderData,
   ScrollRestoration,
   isRouteErrorResponse,
+  LiveReload,
+  useLocation,
 } from '@remix-run/react';
 import favicon from '~/assets/favicon.svg';
 import resetStyles from '~/styles/reset.css?url';
 import appStyles from '~/styles/app.css?url';
 import {PageLayout} from '~/components/PageLayout';
 import {FOOTER_QUERY, HEADER_QUERY} from '~/lib/fragments';
+import EppoRandomizationProvider from '~/components/EppoRandomizationProvider';
+import DiscountBanner from '~/components/DiscountBanner';
+import useRudderStackAnalytics from '~/hooks/useRudderAnalytics';
+import {useEffect} from 'react';
 
 /**
  * This is important to avoid re-fetching root queries on sub-navigations
@@ -50,6 +56,82 @@ export function links() {
     {rel: 'icon', type: 'image/svg+xml', href: favicon},
   ];
 }
+
+export function Layout({children}) {
+  const nonce = useNonce();
+  const data = useRouteLoaderData('root');
+  const location = useLocation();
+  const analytics = useRudderStackAnalytics();
+
+  // Track page views
+  useEffect(() => {
+    if (analytics) {
+      analytics.page();
+    }
+  }, [analytics, location.pathname]);
+
+  return (
+    <html lang="en">
+      <head>
+        <meta charSet="utf-8" />
+        <meta name="viewport" content="width=device-width,initial-scale=1" />
+        <Meta />
+        <Links />
+      </head>
+      <body>
+        {data ? (
+          <Analytics.Provider
+            cart={data.cart}
+            shop={data.shop}
+            consent={data.consent}
+          >
+            <EppoRandomizationProvider>
+              <DiscountBanner />
+              <PageLayout {...data}>{children}</PageLayout>
+            </EppoRandomizationProvider>
+          </Analytics.Provider>
+        ) : (
+          <EppoRandomizationProvider>
+            <DiscountBanner />
+            {children}
+          </EppoRandomizationProvider>
+        )}
+        <ScrollRestoration nonce={nonce} />
+        <Scripts nonce={nonce} />
+      </body>
+    </html>
+  );
+}
+
+export const headers = ({loaderHeaders}) => {
+  return {
+    'Content-Security-Policy': `
+      default-src 'self' https://cdn.shopify.com https://fscdn.eppo.cloud https://*.rudderstack.com;
+      script-src 'self' https://cdn.shopify.com https://cdn.rudderlabs.com 'unsafe-inline' 'unsafe-eval';
+      style-src 'self' 'unsafe-inline' https://cdn.shopify.com;
+      img-src 'self' https://cdn.shopify.com data: blob:;
+      font-src 'self';
+      connect-src 'self' 
+        https://cdn.shopify.com 
+        https://fscdn.eppo.cloud 
+        https://*.dataplane.rudderstack.com 
+        https://cdn.rudderlabs.com 
+        https://api.rudderstack.com 
+        https://*.rudderstack.com 
+        https://monorail-edge.shopifysvc.com 
+        https://*.myshopify.com 
+        http://localhost:* 
+        ws://localhost:* 
+        ws://127.0.0.1:* 
+        ws://*.tryhydrogen.dev:*;
+      frame-src 'self' https://cdn.shopify.com;
+      frame-ancestors 'self';
+      form-action 'self';
+      base-uri 'self';
+      manifest-src 'self';
+    `.replace(/\s+/g, ' '),
+  };
+};
 
 /**
  * @param {LoaderFunctionArgs} args
@@ -130,41 +212,6 @@ function loadDeferredData({context}) {
     isLoggedIn: customerAccount.isLoggedIn(),
     footer,
   };
-}
-
-/**
- * @param {{children?: React.ReactNode}}
- */
-export function Layout({children}) {
-  const nonce = useNonce();
-  /** @type {RootLoader} */
-  const data = useRouteLoaderData('root');
-
-  return (
-    <html lang="en">
-      <head>
-        <meta charSet="utf-8" />
-        <meta name="viewport" content="width=device-width,initial-scale=1" />
-        <Meta />
-        <Links />
-      </head>
-      <body>
-        {data ? (
-          <Analytics.Provider
-            cart={data.cart}
-            shop={data.shop}
-            consent={data.consent}
-          >
-            <PageLayout {...data}>{children}</PageLayout>
-          </Analytics.Provider>
-        ) : (
-          children
-        )}
-        <ScrollRestoration nonce={nonce} />
-        <Scripts nonce={nonce} />
-      </body>
-    </html>
-  );
 }
 
 export default function App() {
