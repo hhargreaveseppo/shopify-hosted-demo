@@ -27,10 +27,10 @@ export function CartMain({layout, cart: originalCart}) {
 
   return (
     <div className={className}>
-      {/* <EppoComponent /> */}
-      <EppoRandomizationProvider>
+    
+      {/* <EppoRandomizationProvider>
         <OfferComponent />
-      </EppoRandomizationProvider>
+      </EppoRandomizationProvider> */}
       <CartEmpty hidden={linesCount} layout={layout} />
       <div className="cart-details">
         <div aria-labelledby="cart-lines">
