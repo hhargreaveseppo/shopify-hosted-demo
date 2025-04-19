@@ -35,6 +35,7 @@ export default async function handleRequest(
       'https://fscdn.eppo.cloud',
       'https://*.rudderstack.com',
       'https://*.rudderlabs.com',
+      'https://monorail-edge.shopifysvc.com'
     ]
   });
 
