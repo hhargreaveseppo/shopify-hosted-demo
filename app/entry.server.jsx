@@ -32,7 +32,7 @@ export default async function handleRequest(
     connectSrc: [
       "'self'",
       'https://cdn.shopify.com',
-      'https://fscdn.eppo.cloud',
+      'https://*.fscdn.eppo.cloud',
       'https://*.rudderstack.com',
       'https://*.rudderlabs.com',
       'https://monorail-edge.shopifysvc.com'

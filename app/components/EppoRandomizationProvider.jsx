@@ -17,6 +17,8 @@ export default function EppoRandomizationProvider({
           console.log("Assignment: ", assignment);
         },
       },
+      overridesStorageKey: 'eppo-overrides',
+      enableOverrides: true,
     }).then(() => {
       setIsInitialized(true);
       console.log("Eppo SDK initialized successfully");

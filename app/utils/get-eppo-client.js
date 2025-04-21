@@ -11,6 +11,8 @@ export default async function getEppoClient() {
         console.log('Eppo Assignment:', assignment);
       },
     },
+    overridesStorageKey: 'eppo-overrides',
+    enableOverrides: true,
   }).catch((err) => {
     console.error('Error initializing Eppo SDK:', err);
     return null; // Return null if the SDK fails to initialize
